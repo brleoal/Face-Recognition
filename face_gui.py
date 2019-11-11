@@ -25,8 +25,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
         uic.loadUi('facerecognition.ui', self)
-        self.pushButton.clicked.connect(self.login)
         self.scene = QtWidgets.QGraphicsScene()
+        self.graphicsView.setScene(self.scene)
+        self.pushButton.clicked.connect(self.login)
         
     def authError(self, username, password):
         if self.scene.isActive():
@@ -50,8 +51,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if auth is not None:
             if auth < 50:
                 record = db.getData(username, password)
-                photo = record[3] 
-                self.graphicsView.setScene(self.scene)
+                photo = record[3]
                 qimg = QtGui.QImage.fromData(photo)
                 pixmap = QtGui.QPixmap.fromImage(qimg)
                 gfxPixItem = self.scene.addPixmap(pixmap)
