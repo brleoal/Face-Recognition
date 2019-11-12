@@ -6,5 +6,5 @@ Requeriments:
 Python 2.7
 OpenCV
 SQLite
+QT5
 PyQT5
-KiCad
