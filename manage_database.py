@@ -43,17 +43,17 @@ def insertData(ID, username, passwd, photo, traindata):
                                 photo, traindata) VALUES (?, ?, ?, ?, ?)
                                 """
         if os.path.isfile(photo):
-            with open(photo, 'rb') as f:
-                usrPhoto = f.read()
+            with open(photo, 'rb') as f1:
+                usrPhoto = f1.read()
         else:
             print('Error: File {} does not exist'.format(photo))
         if os.path.isfile(traindata):
-            with open(traindata, 'rb') as f:
-                usrData = f.read()
+            with open(traindata, 'rb') as f2:
+                usrData = f2.read()
         else:
             print('Error: File {} does not exist'.format(traindata))
-        username = unicode(username, 'utf-8')
-        passwd = unicode(passwd, 'utf-8')
+        #username = unicode(username, 'utf-8')
+        #passwd = unicode(passwd, 'utf-8')
         data = (ID, username, passwd, sqlite3.Binary(usrPhoto),
                 sqlite3.Binary(usrData))
         c.execute(sql_insert_blob_query, data)
@@ -67,37 +67,28 @@ def insertData(ID, username, passwd, photo, traindata):
         conn.close()
         print('The SQLite connection is closed')
 
-def updateData(username):
+def updateData(param, username, passwd, photo):
     try:
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
         print('Connected to SQLite')
-        data = input('Which data you want to update? (1-password, 2-photo):')
-        if data == 1:
-            sql_update_query = """UPDATE users SET passwd = ? WHERE
-                               username = ?
-                               """
-            while True:
-                passwd = raw_input('Enter new user password:')
-                retpasswd = raw_input('Retype new user password:')
-                if passwd == retpasswd:
-                    break
-                print('Sorry, try again')
-            username = unicode(username, 'utf-8')
-            passwd = unicode(passwd, 'utf-8')
+        query = {
+            0: "UPDATE users SET passwd = ? WHERE username = ?",
+            1: "UPDATE users SET photo = ? WHERE username = ?"
+        }
+        sql_update_query = query.get(param, 'Invalid parameter')
+        if param == 0:
+            #username = unicode(username, 'utf-8')
+            #passwd = unicode(passwd, 'utf-8')
             columnValues = (passwd, username)
             c.execute(sql_update_query, columnValues)
             conn.commit()
             print('Password updated successfully')
-        elif data == 2:
-            sql_update_query = """UPDATE users SET photo = ? WHERE
-                               username = ?
-                               """
-            photo = raw_input('Enter the path of file:')
+        elif param == 1:
             if os.path.isfile(photo):
                 with open(photo, 'rb') as f:
                     usrPhoto = f.read()
-                username = unicode(username, 'utf-8')
+                #username = unicode(username, 'utf-8')
                 columnValues = (sqlite3.Binary(usrPhoto), username)
                 c.execute(sql_update_query, columnValues)
                 conn.commit()
@@ -112,24 +103,44 @@ def updateData(username):
         conn.close()
         print('The SQLite connection is closed')
 
-def getData(username, passwd):
+def getData(param, id, user, passwd):
     try:
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
         print('Connected to SQLite')
-        sql_fetch_blob_query = """SELECT * FROM users where username = ?
-                               AND passwd = ?
-                               """
-        username = unicode(username, 'utf-8')
-        passwd = unicode(passwd, 'utf-8')
-        data = (username, passwd)
+        query = {
+            0: "SELECT * FROM users WHERE id = ? AND passwd = ?",
+            1: "SELECT * FROM users WHERE username = ? AND passwd = ?"
+        }
+        sql_fetch_blob_query = query.get(param, 'Invalid parameter')
+        #username = unicode(user, 'utf-8')
+        #passwd = unicode(passwd, 'utf-8')
+        tablelist = {
+            0: (id, passwd),
+            1: (user, passwd)
+        }
+        data = tablelist.get(param, 'Invalid parameter')
         c.execute(sql_fetch_blob_query, data)
         record = c.fetchone()
         if record is not None:
             print('Data successfully obtained')
         else:
-            print('Username or password are incorrect')
+            print('Inserted data are incorrect')
         return record
+    except sqlite3.Error as error:
+        print('Failed to read data from database', error)
+    finally:
+        conn.close()
+        print('The SQLite connection is closed')
+
+def getLastID():
+    try:
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        print('Connected to SQLite')
+        sql_lastid_query = "SELECT COUNT(id) FROM users"
+        c.execute(sql_lastid_query)
+        return c.fetchone()[0]
     except sqlite3.Error as error:
         print('Failed to read data from database', error)
     finally:
@@ -142,8 +153,8 @@ def deleteData(username):
         c = conn.cursor()
         print('Connected to SQLite')
         sql_delete_query = """DELETE FROM users WHERE username = ?"""
-        username = unicode(username, 'utf-8')
-        cursor.execute(sql_delete_query, (username,))
+        #username = unicode(username, 'utf-8')
+        c.execute(sql_delete_query, (username,))
         conn.commit()
         print('Record deleted successfully')
     except sqlite3.Error as error:
