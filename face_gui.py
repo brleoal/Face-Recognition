@@ -1,4 +1,10 @@
-""" This program is free software: you can redistribute it and/or modify
+""" 
+    Facial recognition system for biometric restricted area access
+    Author: Bruno Alonso Leon Alata
+    Date: Oct 29 2019
+    Email: b.leonalata@protonmail.com
+
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
